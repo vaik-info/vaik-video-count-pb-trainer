@@ -76,7 +76,18 @@ class VideoCountDataset:
         data_list = []
         for data in tqdm.tqdm(dataset, desc='get_all_data', total=cls.max_sample_num):
             data_list.append(data)
-        all_data_list = [None for _ in range(len(data_list[0]))]
+        all_data_list = []
         for index in range(len(data_list[0])):
-            all_data_list[index] = tf.stack([data[index] for data in data_list])
+            max_shape = data_list[0][index].shape.as_list()
+            for data in data_list:
+                for shape_index, (max_size, size) in enumerate(zip(max_shape, data[index].shape)):
+                    if size > max_size:
+                        max_shape[shape_index] = size
+            padding_data_list = []
+            for data in data_list:
+                pad = []
+                for max_size, data_size in zip(max_shape, data[index].shape):
+                    pad.append([0, max_size - data_size])
+                padding_data_list.append(tf.pad(data[index], pad))
+            all_data_list.append(tf.stack(padding_data_list))
         return tuple(all_data_list)
