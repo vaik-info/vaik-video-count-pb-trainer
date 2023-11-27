@@ -4,7 +4,7 @@ import tensorflow as tf
 from dump_train_dataset import create_gif
 
 class SaveCallback(tf.keras.callbacks.Callback):
-    def __init__(self, save_model, save_model_dir_path, prefix, valid_data, train_valid_data, logging_sample=10):
+    def __init__(self, save_model, save_model_dir_path, prefix, valid_data, train_valid_data, logging_sample=16):
         super(SaveCallback, self).__init__()
         os.makedirs(save_model_dir_path, exist_ok=True)
 
