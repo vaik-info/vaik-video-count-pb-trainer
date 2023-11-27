@@ -4,7 +4,6 @@ from tqdm import tqdm
 from PIL import Image
 from data import video_count_dataset
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 def create_gif(video, output_file_path, duration=5):
     gif_image_list = []
     for video_index in range(video.shape[0]):
@@ -15,6 +14,7 @@ def create_gif(video, output_file_path, duration=5):
 
 
 def dump(tfrecords_dir_path, classes_txt_path, sample_num, image_height, image_width, skip_frame_ratio, output_dir_path):
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
     os.makedirs(output_dir_path, exist_ok=True)
     with open(classes_txt_path, 'r') as f:
         classes = f.readlines()
