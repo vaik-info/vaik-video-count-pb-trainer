@@ -54,7 +54,7 @@ if __name__ == '__main__':
     parser.add_argument('--classes_txt_path', type=str, default='/media/kentaro/dataset/.vaik-mnist-video-count-dataset/train_tfrecords/classes.txt')
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--step_size', type=int, default=1000)
-    parser.add_argument('--batch_size', type=int, default=8)
+    parser.add_argument('--batch_size', type=int, default=4)
     parser.add_argument('--image_size', type=int, default=224)
     parser.add_argument('--skip_frame_ratio', nargs='+', type=int, default=(1, 2, 4))
     parser.add_argument('--valid_sample_num', type=int, default=100)
