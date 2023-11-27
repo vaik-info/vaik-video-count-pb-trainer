@@ -37,5 +37,5 @@ class SaveCallback(tf.keras.callbacks.Callback):
             for inf in result[index]:
                 inf_string += f'{round(inf)}_'
             inf_string = inf_string[:-1]
-            output_file_path = os.path.join(output_log_dir_path, f'{index:04d}_ans-{answer_string}_inf-{inf_string}.png')
+            output_file_path = os.path.join(output_log_dir_path, f'{index:04d}_ans-{answer_string}_inf-{inf_string}.gif')
             create_gif(video, output_file_path)
