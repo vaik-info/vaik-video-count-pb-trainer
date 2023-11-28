@@ -9,7 +9,7 @@ from model import mobile_net_v2_cam_video_model
 from callbacks import save_callback
 
 def train(train_tfrecords_dir_path, test_tfrecords_dir_path, classes_txt_path, epochs, step_size, batch_size, image_size, skip_frame_ratio,
-          test_sample_num, output_dir_path):
+          test_sample_num, output_dir_path, pretrain_dir_path, pretrain_freeze):
     with open(classes_txt_path, 'r') as f:
         classes = f.readlines()
     classes = [label.strip() for label in classes]
@@ -33,7 +33,7 @@ def train(train_tfrecords_dir_path, test_tfrecords_dir_path, classes_txt_path, e
     train_valid_data = video_count_dataset.VideoCountDataset.get_all_data(train_valid_dataset)
 
     # prepare model
-    train_model, save_model = mobile_net_v2_cam_video_model.prepare(len(classes), image_size, fine=True)
+    train_model, save_model = mobile_net_v2_cam_video_model.prepare(len(classes), image_size, pretrain_dir_path=pretrain_dir_path, pretrain_freeze=pretrain_freeze, fine=True)
     train_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss=tf.keras.losses.Huber())
 
     # prepare callback
@@ -53,21 +53,24 @@ if __name__ == '__main__':
     parser.add_argument('--test_tfrecords_dir_path', type=str, default='/media/kentaro/dataset/.vaik-mnist-video-count-dataset/valid_tfrecords')
     parser.add_argument('--classes_txt_path', type=str, default='/media/kentaro/dataset/.vaik-mnist-video-count-dataset/train_tfrecords/classes.txt')
     parser.add_argument('--epochs', type=int, default=40)
-    parser.add_argument('--step_size', type=int, default=10)
+    parser.add_argument('--step_size', type=int, default=1000)
     parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--image_size', type=int, default=224)
     parser.add_argument('--skip_frame_ratio', nargs='+', type=int, default=(1, 2, 4))
     parser.add_argument('--valid_sample_num', type=int, default=100)
     parser.add_argument('--output_dir_path', type=str, default='~/.vaik-video-count-pb-trainer/output_model')
+    parser.add_argument('--pretrain_dir_path', type=str, default='~/.vaik-count-pb-trainer/output_model/2023-11-28-10-11-03/step-1000_batch-16_epoch-0_loss_0.8568_val_loss_0.9643_feature')
+    parser.add_argument('--pretrain_freeze', type=bool, default=True)
     args = parser.parse_args()
 
     args.train_tfrecords_dir_path = os.path.expanduser(args.train_tfrecords_dir_path)
     args.test_tfrecords_dir_path = os.path.expanduser(args.test_tfrecords_dir_path)
     args.classes_txt_path = os.path.expanduser(args.classes_txt_path)
     args.output_dir_path = os.path.expanduser(args.output_dir_path)
+    args.pretrain_dir_path = os.path.expanduser(args.pretrain_dir_path)
 
     os.makedirs(args.output_dir_path, exist_ok=True)
 
     train(args.train_tfrecords_dir_path, args.test_tfrecords_dir_path, args.classes_txt_path, args.epochs, args.step_size,
           args.batch_size, args.image_size, args.skip_frame_ratio,
-          args.valid_sample_num, args.output_dir_path)
+          args.valid_sample_num, args.output_dir_path, args.pretrain_dir_path, args.pretrain_freeze)

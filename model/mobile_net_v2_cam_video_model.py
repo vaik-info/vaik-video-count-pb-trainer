@@ -1,10 +1,17 @@
+import os.path
+
 import tensorflow as tf
 
-def prepare(class_num, image_size=320, bottle_neck=64, fine=False):
+def prepare(class_num, image_size=320, bottle_neck=64, pretrain_dir_path=None, pretrain_freeze=False, fine=False):
     base_model = tf.keras.applications.MobileNetV2(weights='imagenet' if fine else None,
                                                    include_top=False, input_shape=(image_size, image_size, 3))
     base_output = tf.keras.layers.Conv2D(filters=bottle_neck, kernel_size=3, activation='relu', padding='same')(base_model.layers[118].output)
     partial_model = tf.keras.Model(inputs=base_model.input, outputs=base_output)
+    if pretrain_dir_path is not None and os.path.exists(pretrain_dir_path):
+        partial_model.load_weights(pretrain_dir_path)
+        if pretrain_freeze:
+            for layer in partial_model.layers:
+                layer.trainable = False
 
     inputs = tf.keras.Input(shape=(None, image_size, image_size, 3))
     x0 = tf.keras.layers.TimeDistributed(partial_model)(inputs)
