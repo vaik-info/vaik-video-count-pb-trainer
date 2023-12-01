@@ -6,7 +6,6 @@ import tensorflow as tf
 
 from data import video_count_dataset
 from model import mobile_net_v2_cam_video_model
-from loss import ttf_huber_loss
 from callbacks import save_callback
 
 def train(train_tfrecords_dir_path, test_tfrecords_dir_path, classes_txt_path, epochs, step_size, batch_size, image_size, skip_frame_ratio,
@@ -35,7 +34,7 @@ def train(train_tfrecords_dir_path, test_tfrecords_dir_path, classes_txt_path, e
 
     # prepare model
     train_model, save_model = mobile_net_v2_cam_video_model.prepare(len(classes), image_size, pretrain_dir_path=pretrain_dir_path, pretrain_freeze=pretrain_freeze, fine=True)
-    train_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss=ttf_huber_loss.ttv_huber_loss())
+    train_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss=tf.keras.losses.Huber())
 
     # prepare callback
     save_model_dir_path = os.path.join(output_dir_path,
