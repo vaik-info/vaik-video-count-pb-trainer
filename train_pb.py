@@ -59,7 +59,7 @@ if __name__ == '__main__':
     parser.add_argument('--skip_frame_ratio', nargs='+', type=int, default=(1,))
     parser.add_argument('--valid_sample_num', type=int, default=100)
     parser.add_argument('--output_dir_path', type=str, default='~/.vaik-video-count-pb-trainer/output_model')
-    parser.add_argument('--pretrain_dir_path', type=str, default='~/.vaik-count-pb-trainer/output_model/2023-11-28-10-11-03/step-1000_batch-16_epoch-0_loss_0.8568_val_loss_0.9643_feature')
+    parser.add_argument('--pretrain_dir_path', type=str, default='/home/kentaro/.vaik-count-pb-trainer/output_model/2023-12-01-22-29-14/step-10_batch-16_epoch-0_loss_6.3272_val_loss_1.3148_feature_ckpt/weight.ckpt')
     parser.add_argument('--pretrain_freeze', type=bool, default=True)
     args = parser.parse_args()
 
