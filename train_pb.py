@@ -34,7 +34,7 @@ def train(train_tfrecords_dir_path, test_tfrecords_dir_path, classes_txt_path, e
 
     # prepare model
     train_model, save_model = mobile_net_v2_cam_video_model.prepare(len(classes), image_size, pretrain_dir_path=pretrain_dir_path, pretrain_freeze=pretrain_freeze, fine=True)
-    train_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss=tf.keras.losses.Huber())
+    train_model.compile(optimizer=tf.keras.optimizers.Adam(), loss=tf.keras.losses.Huber())
 
     # prepare callback
     save_model_dir_path = os.path.join(output_dir_path,
