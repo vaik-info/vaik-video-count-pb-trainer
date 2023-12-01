@@ -6,6 +6,7 @@ import tensorflow as tf
 
 from data import video_count_dataset
 from model import mobile_net_v2_cam_video_model
+from loss import ttf_huber_loss
 from callbacks import save_callback
 
 def train(train_tfrecords_dir_path, test_tfrecords_dir_path, classes_txt_path, epochs, step_size, batch_size, image_size, skip_frame_ratio,
@@ -34,7 +35,7 @@ def train(train_tfrecords_dir_path, test_tfrecords_dir_path, classes_txt_path, e
 
     # prepare model
     train_model, save_model = mobile_net_v2_cam_video_model.prepare(len(classes), image_size, pretrain_dir_path=pretrain_dir_path, pretrain_freeze=pretrain_freeze, fine=True)
-    train_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss=tf.keras.losses.Huber())
+    train_model.compile(optimizer=tf.keras.optimizers.Adam(learning_rate=0.0001), loss=ttf_huber_loss.ttv_huber_loss())
 
     # prepare callback
     save_model_dir_path = os.path.join(output_dir_path,
@@ -56,7 +57,7 @@ if __name__ == '__main__':
     parser.add_argument('--step_size', type=int, default=1000)
     parser.add_argument('--batch_size', type=int, default=8)
     parser.add_argument('--image_size', type=int, default=224)
-    parser.add_argument('--skip_frame_ratio', nargs='+', type=int, default=(1, 2, 4))
+    parser.add_argument('--skip_frame_ratio', nargs='+', type=int, default=(1,))
     parser.add_argument('--valid_sample_num', type=int, default=100)
     parser.add_argument('--output_dir_path', type=str, default='~/.vaik-video-count-pb-trainer/output_model')
     parser.add_argument('--pretrain_dir_path', type=str, default='~/.vaik-count-pb-trainer/output_model/2023-11-28-10-11-03/step-1000_batch-16_epoch-0_loss_0.8568_val_loss_0.9643_feature')
