@@ -23,7 +23,9 @@ class VideoCountDataset:
         cls.max_sample_num = max_sample_num
         cls.parsed_dataset = cls.__load_tfrecords(tfrecords_dir_path)
         cls.output_signature = (tf.TensorSpec(name=f'video', shape=(None,) + input_size, dtype=tf.uint8),
-                                tf.TensorSpec(name=f'count', shape=(len(classes)), dtype=tf.int32))
+                                tf.TensorSpec(name=f'count', shape=(len(classes)), dtype=tf.int32),
+                                tf.TensorSpec(name=f'length', shape=(), dtype=tf.int32))
+
 
         dataset = tf.data.Dataset.from_generator(
             cls._generator,
@@ -46,7 +48,7 @@ class VideoCountDataset:
                 video = tf.image.resize_with_crop_or_pad(video, max(video.shape[1:3]), max(video.shape[1:3]))
                 video = tf.image.resize(video, (cls.input_size[0], cls.input_size[1]))
                 video_array[:video.shape[0], :, :, :] = video
-                yield tf.cast(video_array, tf.uint8), tf.cast(count, tf.int32)
+                yield (tf.cast(video_array, tf.uint8), tf.cast(count, tf.int32), tf.convert_to_tensor(video.shape[0], tf.int32))
 
     @classmethod
     def __parse_tfrecord_fn(cls, example):
