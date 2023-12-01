@@ -3,14 +3,16 @@ import os.path
 import tensorflow as tf
 
 class LengthTTVLossLayer(tf.keras.layers.Layer):
-    def __init__(self, ttv_weight=0.1):
+    def __init__(self, active_huber_weight=1.0, blank_huber_weight=1.0, ttv_weight=0.01):
+        self.active_huber_weight = tf.convert_to_tensor(active_huber_weight, dtype=tf.float32)
+        self.blank_huber_weight = tf.convert_to_tensor(blank_huber_weight, dtype=tf.float32)
         self.ttv_weight = tf.convert_to_tensor(ttv_weight, dtype=tf.float32)
         super(LengthTTVLossLayer, self).__init__()
     def call(self, inputs, *args, **kwargs):
         cam_output, count, length = inputs
 
         batch_size = tf.shape(cam_output)[0]
-        max_length = tf.reduce_max(length)
+        max_length = tf.shape(cam_output)[1]
 
         def process_batch(i):
             active_pred = cam_output[i, :length[i], ...]
@@ -28,9 +30,9 @@ class LengthTTVLossLayer(tf.keras.layers.Layer):
             parallel_iterations=32
         )
 
-        active_huber_loss = tf.losses.huber(count, tf.reduce_sum(active_predictions, axis=[1, 2, 3]))
-        blank_huber_loss = tf.losses.huber(0, tf.reduce_sum(blank_predictions, axis=[1, 2, 3]))
-        ttv_regularization = tf.reduce_sum(tf.abs(active_predictions[:, 1:] - active_predictions[:, :-1])) * self.ttv_weight
+        active_huber_loss = tf.losses.huber(count, tf.reduce_sum(active_predictions, axis=[1, 2, 3])) * self.active_huber_weight
+        blank_huber_loss = tf.losses.huber(0, tf.reduce_sum(blank_predictions, axis=[1, 2, 3])) * self.blank_huber_weight
+        ttv_regularization = 1 / (tf.math.reduce_variance(tf.abs(active_predictions[:, 1:] - active_predictions[:, :-1])) + 1e-6) * self.ttv_weight
         total_loss = active_huber_loss + blank_huber_loss + ttv_regularization
         self.add_loss(total_loss)
         self.add_metric(active_huber_loss, name='active_huber_loss')
