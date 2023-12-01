@@ -25,7 +25,7 @@ def dump(tfrecords_dir_path, classes_txt_path, sample_num, image_height, image_w
                                input_size=(image_height, image_width, 3), max_sample_num=sample_num)
 
     for index, data in tqdm(enumerate(dump_dataset)):
-        video, count, length = data
+        video, count, length = data[0]
         count_str = ""
         for class_index, label in enumerate(classes):
             count_str += f'{label}_{count[class_index]}_'

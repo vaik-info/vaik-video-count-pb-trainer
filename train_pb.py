@@ -18,23 +18,28 @@ def train(train_tfrecords_dir_path, test_tfrecords_dir_path, classes_txt_path, e
     TrainDataset = type(f'TrainDataset', (video_count_dataset.VideoCountDataset,), dict())
     train_dataset = TrainDataset(train_tfrecords_dir_path, classes, skip_frame_ratio=skip_frame_ratio,
                                  input_size=(image_size, image_size, 3))
-    train_dataset = train_dataset.padded_batch(batch_size=batch_size, padding_values=(
-        tf.constant(0, dtype=tf.uint8), tf.constant(0, dtype=tf.int32)))
+    train_dataset = train_dataset.padded_batch(batch_size=batch_size, padding_values=((tf.constant(0, dtype=tf.uint8),
+                                                                                      tf.constant(0, dtype=tf.int32),
+                                                                                      tf.constant(0, dtype=tf.int32)), ), )
     # valid
     ValidDataset = type(f'ValidDataset', (video_count_dataset.VideoCountDataset,), dict())
     valid_dataset = ValidDataset(test_tfrecords_dir_path, classes, skip_frame_ratio=skip_frame_ratio,
                                  input_size=(image_size, image_size, 3), max_sample_num=test_sample_num)
-    valid_data = video_count_dataset.VideoCountDataset.get_all_data(valid_dataset)
+    valid_data = iter(valid_dataset.padded_batch(batch_size=test_sample_num, padding_values=((tf.constant(0, dtype=tf.uint8),
+                                                                                     tf.constant(0, dtype=tf.int32),
+                                                                                     tf.constant(0, dtype=tf.int32)), ), )).__next__()
 
     # train_valid
     TrainValidDataset = type(f'TrainValidDataset', (video_count_dataset.VideoCountDataset,), dict())
     train_valid_dataset = TrainValidDataset(train_tfrecords_dir_path, classes, skip_frame_ratio=skip_frame_ratio,
                                  input_size=(image_size, image_size, 3), max_sample_num=test_sample_num)
-    train_valid_data = video_count_dataset.VideoCountDataset.get_all_data(train_valid_dataset)
+    train_valid_data = iter(train_valid_dataset.padded_batch(batch_size=test_sample_num, padding_values=((tf.constant(0, dtype=tf.uint8),
+                                                                                                    tf.constant(0, dtype=tf.int32),
+                                                                                                    tf.constant(0, dtype=tf.int32)), ), )).__next__()
 
     # prepare model
     train_model, save_model = mobile_net_v2_cam_video_model.prepare(len(classes), image_size, pretrain_weight_path=pretrain_weight_path, pretrain_freeze=pretrain_freeze, fine=True)
-    train_model.compile(optimizer=tf.keras.optimizers.Adam(), loss=tf.keras.losses.Huber())
+    train_model.compile(optimizer=tf.keras.optimizers.Adam())
 
     # prepare callback
     save_model_dir_path = os.path.join(output_dir_path,

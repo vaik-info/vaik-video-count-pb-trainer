@@ -22,9 +22,11 @@ class VideoCountDataset:
         cls.input_size = input_size
         cls.max_sample_num = max_sample_num
         cls.parsed_dataset = cls.__load_tfrecords(tfrecords_dir_path)
-        cls.output_signature = (tf.TensorSpec(name=f'video', shape=(None,) + input_size, dtype=tf.uint8),
+        cls.output_signature = (
+            (tf.TensorSpec(name=f'video', shape=(None,) + input_size, dtype=tf.uint8),
                                 tf.TensorSpec(name=f'count', shape=(len(classes)), dtype=tf.int32),
-                                tf.TensorSpec(name=f'length', shape=(), dtype=tf.int32))
+                                tf.TensorSpec(name=f'length', shape=(), dtype=tf.int32)),
+            )
 
 
         dataset = tf.data.Dataset.from_generator(
@@ -48,7 +50,7 @@ class VideoCountDataset:
                 video = tf.image.resize_with_crop_or_pad(video, max(video.shape[1:3]), max(video.shape[1:3]))
                 video = tf.image.resize(video, (cls.input_size[0], cls.input_size[1]))
                 video_array[:video.shape[0], :, :, :] = video
-                yield (tf.cast(video_array, tf.uint8), tf.cast(count, tf.int32), tf.convert_to_tensor(video.shape[0], tf.int32))
+                yield ((tf.cast(video_array, tf.uint8), tf.cast(count, tf.int32), tf.convert_to_tensor(video.shape[0], dtype=tf.int32)), )
 
     @classmethod
     def __parse_tfrecord_fn(cls, example):
@@ -70,26 +72,3 @@ class VideoCountDataset:
         raw_dataset = tf.data.TFRecordDataset(tfrecords_path_list)
         parsed_dataset = raw_dataset.map(cls.__parse_tfrecord_fn)
         return parsed_dataset
-
-
-    @classmethod
-    def get_all_data(cls, dataset):
-        dataset = iter(dataset)
-        data_list = []
-        for data in tqdm.tqdm(dataset, desc='get_all_data', total=cls.max_sample_num):
-            data_list.append(data)
-        all_data_list = []
-        for index in range(len(data_list[0])):
-            max_shape = data_list[0][index].shape.as_list()
-            for data in data_list:
-                for shape_index, (max_size, size) in enumerate(zip(max_shape, data[index].shape)):
-                    if size > max_size:
-                        max_shape[shape_index] = size
-            padding_data_list = []
-            for data in data_list:
-                pad = []
-                for max_size, data_size in zip(max_shape, data[index].shape):
-                    pad.append([0, max_size - data_size])
-                padding_data_list.append(tf.pad(data[index], pad))
-            all_data_list.append(tf.stack(padding_data_list))
-        return tuple(all_data_list)

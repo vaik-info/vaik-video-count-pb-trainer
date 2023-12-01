@@ -27,10 +27,10 @@ class SaveCallback(tf.keras.callbacks.Callback):
 
     def predict_dump(self, output_log_dir_path, valid_data):
         os.makedirs(output_log_dir_path, exist_ok=True)
-        result = self.model.predict(valid_data[0][:self.logging_sample])
-        for index, video in enumerate(valid_data[0][:self.logging_sample]):
+        result = self.save_model.predict(valid_data[0][0][:self.logging_sample])[0]
+        for index, video in enumerate(valid_data[0][0][:self.logging_sample]):
             answer_string = ""
-            for answer in valid_data[1][index]:
+            for answer in valid_data[0][1][index]:
                 answer_string += f'{int(answer)}_'
             answer_string = answer_string[:-1]
             inf_string = ""
