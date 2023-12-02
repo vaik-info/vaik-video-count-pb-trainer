@@ -9,7 +9,7 @@ from model import mobile_net_v2_cam_video_model
 from callbacks import save_callback
 
 def train(train_tfrecords_dir_path, test_tfrecords_dir_path, classes_txt_path, epochs, step_size, batch_size, image_size, skip_frame_ratio,
-          test_sample_num, output_dir_path, pretrain_weight_path, pretrain_freeze):
+          test_sample_num, output_dir_path, pretrain_model_path, pretrain_freeze):
     with open(classes_txt_path, 'r') as f:
         classes = f.readlines()
     classes = [label.strip() for label in classes]
@@ -33,7 +33,7 @@ def train(train_tfrecords_dir_path, test_tfrecords_dir_path, classes_txt_path, e
     train_valid_data = video_count_dataset.VideoCountDataset.get_all_data(train_valid_dataset)
 
     # prepare model
-    train_model, save_model = mobile_net_v2_cam_video_model.prepare(len(classes), image_size, pretrain_weight_path=pretrain_weight_path, pretrain_freeze=pretrain_freeze, fine=True)
+    train_model, save_model = mobile_net_v2_cam_video_model.prepare(len(classes), image_size, pretrain_model_path=pretrain_model_path, pretrain_freeze=pretrain_freeze, fine=True)
     train_model.compile(optimizer=tf.keras.optimizers.Adam(), loss=tf.keras.losses.Huber())
 
     # prepare callback
@@ -59,7 +59,7 @@ if __name__ == '__main__':
     parser.add_argument('--skip_frame_ratio', nargs='+', type=int, default=(1,))
     parser.add_argument('--valid_sample_num', type=int, default=100)
     parser.add_argument('--output_dir_path', type=str, default='~/.vaik-video-count-pb-trainer/output_model')
-    parser.add_argument('--pretrain_weight_path', type=str, default='/home/kentaro/.vaik-count-pb-trainer/output_model/2023-12-01-22-32-53/step-1000_batch-16_epoch-7_loss_0.0452_val_loss_0.0444_feature_ckpt/weight.ckpt')
+    parser.add_argument('--pretrain_model_path', type=str, default='/home/kentaro/.vaik-count-pb-trainer/output_model/2023-12-02-22-17-43/step-1000_batch-16_epoch-9_loss_0.0401_val_loss_0.0284_feature.h5')
     parser.add_argument('--pretrain_freeze', type=bool, default=True)
     args = parser.parse_args()
 
@@ -67,10 +67,10 @@ if __name__ == '__main__':
     args.test_tfrecords_dir_path = os.path.expanduser(args.test_tfrecords_dir_path)
     args.classes_txt_path = os.path.expanduser(args.classes_txt_path)
     args.output_dir_path = os.path.expanduser(args.output_dir_path)
-    args.pretrain_weight_path = os.path.expanduser(args.pretrain_weight_path)
+    args.pretrain_model_path = os.path.expanduser(args.pretrain_model_path)
 
     os.makedirs(args.output_dir_path, exist_ok=True)
 
     train(args.train_tfrecords_dir_path, args.test_tfrecords_dir_path, args.classes_txt_path, args.epochs, args.step_size,
           args.batch_size, args.image_size, args.skip_frame_ratio,
-          args.valid_sample_num, args.output_dir_path, args.pretrain_weight_path, args.pretrain_freeze)
+          args.valid_sample_num, args.output_dir_path, args.pretrain_model_path, args.pretrain_freeze)
