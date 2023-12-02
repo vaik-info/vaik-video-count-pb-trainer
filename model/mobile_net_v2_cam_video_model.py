@@ -3,7 +3,7 @@ import os.path
 import tensorflow as tf
 
 class LengthTTVLossLayer(tf.keras.layers.Layer):
-    def __init__(self, active_huber_weight=1.0, blank_huber_weight=1.0, kl_weight=0.1):
+    def __init__(self, active_huber_weight=1.0, blank_huber_weight=1.0, kl_weight=1.0):
         self.active_huber_weight = tf.convert_to_tensor(active_huber_weight, dtype=tf.float32)
         self.blank_huber_weight = tf.convert_to_tensor(blank_huber_weight, dtype=tf.float32)
         self.kl_weight = tf.convert_to_tensor(kl_weight, dtype=tf.float32)
@@ -56,7 +56,6 @@ def prepare(class_num, image_size=320, bottle_neck=64, pretrain_weight_path=None
     count = tf.keras.layers.Input((class_num), dtype=tf.int32)
     length = tf.keras.layers.Input((), dtype=tf.int32)
     x0 = tf.keras.layers.TimeDistributed(partial_model)(inputs)
-    x0 = tf.keras.layers.TimeDistributed(tf.keras.layers.Conv2D(filters=bottle_neck, kernel_size=1, activation='relu', padding='same'))(x0)
     x0 = tf.keras.layers.Conv3D(filters=bottle_neck//2, kernel_size=(3, 3, 3), dilation_rate=(1, 1, 1), activation='relu', padding='same')(x0)
     x0 = tf.keras.layers.Conv3D(filters=bottle_neck//2, kernel_size=(3, 3, 3), dilation_rate=(2, 2, 2), activation='relu', padding='same')(x0)
     x0 = tf.keras.layers.Conv3D(filters=bottle_neck//2, kernel_size=(3, 3, 3), dilation_rate=(4, 4, 4), activation='relu', padding='same')(x0)
