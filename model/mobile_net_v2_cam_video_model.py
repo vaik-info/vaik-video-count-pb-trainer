@@ -25,20 +25,4 @@ def prepare(class_num, image_size=320, bottle_neck=64, pretrain_model_path=None,
     predictions = tf.keras.layers.Lambda(lambda x: tf.reduce_sum(x, axis=[1, 2, 3]))(cam_output)
     train_model = tf.keras.Model(inputs=inputs, outputs=predictions)
     save_model = tf.keras.Model(inputs=inputs, outputs=[predictions, cam_output])
-    grad_cam_save_model = prepare_grad_cam_model(save_model)
-    return train_model, grad_cam_save_model
-
-def prepare_grad_cam_model(model, time_distributed_layer_name='time_distributed', time_layer_name_list=('Conv1', 'block_1_depthwise', 'block_3_depthwise', 'block_6_depthwise'),
-                           layer_name_list=('conv3d_0', 'conv3d_1', 'conv3d_2', 'conv3d_3')):
-    time_distributed_layer = model.get_layer(time_distributed_layer_name)
-    internal_model = time_distributed_layer.layer
-    new_time_distributed_output_list = []
-    for layer_name in time_layer_name_list:
-        new_output = internal_model.get_layer(layer_name).output
-        new_time_distributed_output = tf.keras.layers.TimeDistributed(tf.keras.Model(inputs=internal_model.input, outputs=new_output))(model.input)
-        new_time_distributed_output_list.append(new_time_distributed_output)
-    for layer_name in layer_name_list:
-        new_time_distributed_output_list.append(model.get_layer(layer_name).output)
-    new_time_distributed_output_list.append(model.output)
-    new_model = tf.keras.models.Model(inputs=model.input, outputs=new_time_distributed_output_list)
-    return new_model
+    return train_model, save_model
